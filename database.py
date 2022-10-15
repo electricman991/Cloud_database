@@ -8,13 +8,9 @@ def initialize_firestore():
     Create database connection
     """
 
-    # Setup Google Cloud Key - The json file is obtained by going to 
-    # Project Settings, Service Accounts, Create Service Account, and then
-    # Generate New Private Key
+    # Setup Google Cloud Key File
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"]  = "cloud_database/data-storage-1d253-firebase-adminsdk-f4xz9-b1a1a85bae.json"
 
-    # Use the application default credentials.  The projectID is obtianed 
-    # by going to Project Settings and then General.
     cred = credentials.ApplicationDefault()
     firebase_admin.initialize_app(cred, {
         'projectId': 'data-storage-1d253',
@@ -34,7 +30,7 @@ def add_new_employee(db):
     salary = float(input("Salary: "))
 
     # Check for an already existing worker by the same name.
-    # The document ID must be unique in Firestore.
+
     result = db.collection("workers").document(name).get()
     if result.exists:
         print("Item already exists.")
@@ -61,9 +57,6 @@ def delete_worker(db):
     if not result.exists:
         print("Invalid Item Name")
         return
-
-    # Convert data read from the firestore document to a dictionary
-    data = result.to_dict()
 
     # Delete the item from the database
     
@@ -119,27 +112,34 @@ def search_workers(db):
     print("Select Query")
     print("1) Show All workers")        
     print("2) Show All workers Salaries")
-    #print("3) Show Popular Inventory with Low Inventory")
     choice = input("> ")
     print()
 
     # Build and execute the query based on the request made
     if choice == "1":
         results = db.collection("workers").get()
+        print("")
+        print("Search Results")
+        print(f"{'Name':<20}  {'Address':<10}  {'Salary':<10}")
+        for result in results:
+            item = result.to_dict()
+            print(f"{result.id:<20}  {item['address']:<10}  {item['salary']:<10}")
+        print()    
     elif choice == "2":
-        results = db.collection("workers").get("salary")
+        results = db.collection("workers").get()
+        print("")
+        print("Search Results")
+        print(f"{'Name':<20}  {'Salary':<10}")
+        for result in results:
+            item = result.to_dict()
+            print(f"{result.id:<20} {item['salary']:<10}")
+        print()    
     else:
         print("Invalid Selection")
         return
     
     # Display all the results from any of the queries
-    print("")
-    print("Search Results")
-    print(f"{'Name':<20}  {'Address':<10}  {'Salary':<10}")
-    for result in results:
-        item = result.to_dict()
-        print(f"{result.id:<20}  {item['address']:<10}  {item['salary']:<10}")
-    print()    
+    
 
 def log_transaction(db, message):
     '''
